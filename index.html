@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>가위바위보 챌린지</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        h1 { font-size: 2.5em; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        #game-area {
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            max-width: 400px;
+            width: 100%;
+        }
+        .choices { display: flex; gap: 20px; justify-content: center; margin: 30px 0; }
+        .choice-btn {
+            width: 80px;
+            height: 80px;
+            border: none;
+            border-radius: 50%;
+            font-size: 2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .choice-btn:hover { transform: scale(1.1); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+        .choice-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .rock { background: linear-gradient(45deg, #ff6b6b, #ee5a24); }
+        .paper { background: linear-gradient(45deg, #4834d4, #686de0); }
+        .scissors { background: linear-gradient(45deg, #10ac84, #1dd1a1); }
+        #result { font-size: 1.5em; margin: 20px 0; min-height: 60px; }
+        .win { color: #10ac84; }
+        .lose { color: #ff6b6b; }
+        .tie { color: #feca57; }
+        #score { font-size: 1.6em; margin: 20px 0; }
+        #controls button {
+            background: linear-gradient(45deg, #10ac84, #1dd1a1);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border-radius: 30px;
+            cursor: pointer;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        #controls button:hover { transform: translateY(-2px); }
+        #controls button:disabled { opacity: 0.6; cursor: not-allowed; }
+        #submit-btn {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+        }
+    </style>
+</head>
+<body>
+<div id="game-area">
+    <h1>가위바위보 챌린지</h1>
+    <div id="result">컴퓨터와 5판 승부!</div>
+    <div class="choices">
+        <button class="choice-btn rock" id="rock" onclick="play('rock')">✊</button>
+        <button class="choice-btn paper" id="paper" onclick="play('paper')">✋</button>
+        <button class="choice-btn scissors" id="scissors" onclick="play('scissors')">✌️</button>
+    </div>
+    <div id="score">
+        승: <span id="wins">0</span> / 패: <span id="losses">0</span> / 남은 라운드: <span id="rounds">5</span>
+    </div>
+    <div id="controls">
+        <button id="restart-btn" onclick="resetGame()">새 게임 시작</button>
+        <button id="submit-btn" onclick="submitScore()" disabled>점수 제출</button>
+    </div>
+</div>
+
+<script>
+    Telegram.WebApp.ready();
+    Telegram.WebApp.expand();
+
+    const MAX_ROUNDS = 5;
+    let wins = 0;
+    let losses = 0;
+    let roundsPlayed = 0;
+    let submitted = false;
+
+    const choices = ['rock', 'paper', 'scissors'];
+    const buttons = {
+        rock: document.getElementById('rock'),
+        paper: document.getElementById('paper'),
+        scissors: document.getElementById('scissors')
+    };
+
+    function disableButtons() {
+        Object.values(buttons).forEach(btn => btn.disabled = true);
+    }
+
+    function enableButtons() {
+        Object.values(buttons).forEach(btn => btn.disabled = false);
+    }
+
+    function play(playerChoice) {
+        if (roundsPlayed >= MAX_ROUNDS || submitted) return;
+
+        const computerChoice = choices[Math.floor(Math.random() * 3)];
+        const result = getResult(playerChoice, computerChoice);
+
+        document.getElementById('result').textContent = getResultText(playerChoice, computerChoice, result);
+        document.getElementById('result').className = result;
+
+        if (result === 'win') wins++;
+        else if (result === 'lose') losses++;
+
+        roundsPlayed++;
+        updateScore();
+
+        // 5판 끝나면 버튼 비활성화 + 제출 버튼 활성화
+        if (roundsPlayed >= MAX_ROUNDS) {
+            disableButtons();
+            document.getElementById('submit-btn').disabled = false;
+        }
+    }
+
+    function getResult(player, computer) {
+        if (player === computer) return 'tie';
+        if (
+            (player === 'rock' && computer === 'scissors') ||
+            (player === 'paper' && computer === 'rock') ||
+            (player === 'scissors' && computer === 'paper')
+        ) return 'win';
+        return 'lose';
+    }
+
+    function getResultText(player, computer, result) {
+        const emojis = { rock: '✊', paper: '✋', scissors: '✌️' };
+        if (result === 'win') return `승리! ${emojis[player]} vs ${emojis[computer]}`;
+        if (result === 'lose') return `패배! ${emojis[player]} vs ${emojis[computer]}`;
+        return `무승부! 둘 다 ${emojis[player]}`;
+    }
+
+    function updateScore() {
+        document.getElementById('wins').textContent = wins;
+        document.getElementById('losses').textContent = losses;
+        document.getElementById('rounds').textContent = MAX_ROUNDS - roundsPlayed;
+    }
+
+    function resetGame() {
+        wins = 0;
+        losses = 0;
+        roundsPlayed = 0;
+        submitted = false;
+        enableButtons();
+        document.getElementById('submit-btn').disabled = true;
+        document.getElementById('result').textContent = `컴퓨터와 ${MAX_ROUNDS}판 승부!`;
+        document.getElementById('result').className = '';
+        updateScore();
+    }
+
+    function submitScore() {
+        if (submitted) return;
+
+        const totalScore = wins * 100 + (wins - losses) * 20;
+
+        const payload = {
+            action: "submit_score",
+            score: totalScore,
+            wins: wins,
+            losses: losses,
+            rounds: MAX_ROUNDS,
+            player_id: Telegram.WebApp.initDataUnsafe.user?.id || "unknown",
+            timestamp: new Date().toISOString()
+        };
+
+        // 1. 서버(봇)로 데이터 전송
+        Telegram.WebApp.sendData(JSON.stringify(payload));
+
+        // 2. 즉시 UI 피드백
+        submitted = true;
+        document.getElementById('result').textContent = `점수 ${totalScore}점 제출 중...`;
+        document.getElementById('result').className = 'win';
+        document.getElementById('submit-btn').disabled = true;
+        disableButtons();
+
+        // 3. 1~2초 후 성공 메시지로 변경 (실제 성공 여부는 봇에서 처리)
+        setTimeout(() => {
+            document.getElementById('result').textContent = `점수 ${totalScore}점 제출 완료! 🎉`;
+        }, 1500);
+    }
+
+    // 초기화
+    updateScore();
+</script>
+</body>
+</html>
