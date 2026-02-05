@@ -175,7 +175,7 @@
         updateScore();
     }
 
-    function submitScore() {
+    async function submitScore() {
         if (submitted) return;
         if (!Telegram.WebApp.isVersionAtLeast('6.0')) {
             alert("이 버전의 Telegram에서는 점수 제출이 지원되지 않습니다.");
@@ -206,6 +206,7 @@
 
         if (!queryId) {
             alert("Inline 모드에서만 지원됩니다.");
+            Telegram.WebApp.sendData(JSON.stringify(payload));
             return;
         }
 
@@ -218,6 +219,26 @@
         document.getElementById('result').className = 'win';
         document.getElementById('submit-btn').disabled = true;
         disableButtons();
+
+        try {
+            const response = await fetch("https://score.ohyoungwoo824.workers.dev/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    query_id: queryId,
+                    user_id: initDataUnsafe.user?.id,
+                    payload: payload,
+                    // initData: Telegram.WebApp.initData  // 보안 검증용 (선택)
+                })
+            });
+
+            if (response.ok) {
+                // 서버에서 answerWebAppQuery 성공 시 Web App 자동 닫힘
+                Telegram.WebApp.close();  // 수동으로 닫아도 됨
+            }
+        } catch (e) {
+            console.error(e);
+        }
 
         // 3. 1~2초 후 성공 메시지로 변경 (실제 성공 여부는 봇에서 처리)
         setTimeout(() => {
