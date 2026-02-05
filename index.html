@@ -90,6 +90,7 @@
     <p id="initData">--</p>
     <p id="initDataUnsafe">--</p>
     <p id="user">--</p>
+    <p id="queryId">--</p>
 </div>
 
 <script>
@@ -201,6 +202,7 @@
         document.getElementById('user').textContent = JSON.stringify(Telegram.WebApp.initDataUnsafe.user);
         const initDataUnsafe = Telegram.WebApp.initDataUnsafe;
         const queryId = initDataUnsafe.query_id;
+        document.getElementById('queryId').textContent = queryId;
 
         if (!queryId) {
             alert("Inline 모드에서만 지원됩니다.");
