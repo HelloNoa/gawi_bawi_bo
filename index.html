@@ -197,8 +197,8 @@
         console.log("initDataUnsafe:", Telegram.WebApp.initDataUnsafe);
         console.log("user:", Telegram.WebApp.initDataUnsafe.user);
         document.getElementById('initData').textContent = Telegram.WebApp.initData;
-        document.getElementById('initDataUnsafe').textContent = Telegram.WebApp.initDataUnsafe;
-        document.getElementById('user').textContent = Telegram.WebApp.initDataUnsafe.user;
+        document.getElementById('initDataUnsafe').textContent = JSON.stringify(Telegram.WebApp.initDataUnsafe);
+        document.getElementById('user').textContent = JSON.stringify(Telegram.WebApp.initDataUnsafe.user);
 
         // 1. 서버(봇)로 데이터 전송
         Telegram.WebApp.sendData(JSON.stringify(payload));
