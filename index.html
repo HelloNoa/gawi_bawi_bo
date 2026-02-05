@@ -176,6 +176,10 @@
 
     function submitScore() {
         if (submitted) return;
+        if (!Telegram.WebApp.isVersionAtLeast('6.0')) {
+            alert("이 버전의 Telegram에서는 점수 제출이 지원되지 않습니다.");
+            return;
+        }
 
         const totalScore = wins * 100 + (wins - losses) * 20;
 
