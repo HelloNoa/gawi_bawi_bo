@@ -87,6 +87,9 @@
         <button id="restart-btn" onclick="resetGame()">새 게임 시작</button>
         <button id="submit-btn" onclick="submitScore()" disabled>점수 제출</button>
     </div>
+    <p id="initData">--</p>
+    <p id="initDataUnsafe">--</p>
+    <p id="user">--</p>
 </div>
 
 <script>
@@ -185,6 +188,13 @@
             player_id: Telegram.WebApp.initDataUnsafe.user?.id || "unknown",
             timestamp: new Date().toISOString()
         };
+
+        console.log("initData:", Telegram.WebApp.initData);
+        console.log("initDataUnsafe:", Telegram.WebApp.initDataUnsafe);
+        console.log("user:", Telegram.WebApp.initDataUnsafe.user);
+        document.getElementById('initData').textContent = Telegram.WebApp.initData;
+        document.getElementById('initDataUnsafe').textContent = Telegram.WebApp.initDataUnsafe;
+        document.getElementById('user').textContent = Telegram.WebApp.initDataUnsafe.user;
 
         // 1. 서버(봇)로 데이터 전송
         Telegram.WebApp.sendData(JSON.stringify(payload));
