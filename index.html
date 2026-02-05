@@ -199,6 +199,13 @@
         document.getElementById('initData').textContent = Telegram.WebApp.initData;
         document.getElementById('initDataUnsafe').textContent = JSON.stringify(Telegram.WebApp.initDataUnsafe);
         document.getElementById('user').textContent = JSON.stringify(Telegram.WebApp.initDataUnsafe.user);
+        const initDataUnsafe = Telegram.WebApp.initDataUnsafe;
+        const queryId = initDataUnsafe.query_id;
+
+        if (!queryId) {
+            alert("Inline 모드에서만 지원됩니다.");
+            return;
+        }
 
         // 1. 서버(봇)로 데이터 전송
         Telegram.WebApp.sendData(JSON.stringify(payload));
